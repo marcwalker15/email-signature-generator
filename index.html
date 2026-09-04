@@ -15,7 +15,7 @@ body{font-family:Arial,sans-serif;background:#f4f7f9;color:#003643;min-height:10
 @media(max-width:860px){.container{grid-template-columns:1fr}}
 .form-panel{background:#fff;border-radius:10px;border:1px solid #E2E6E9;overflow:hidden}
 .step-header{background:#3c7495;color:#fff;padding:12px 18px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;gap:9px;font-family:'Lato',Arial,sans-serif}
-.step-badge{width:22px;height:22px;border-radius:50%;background:#003643;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.step-badge{width:22px;height:22px;border-radius:50%;background:#f1f7fa;color:#003643;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
 .step-body{padding:18px}
 .divider{border:none;border-top:1px solid #E2E6E9}
 .bu-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
@@ -43,7 +43,7 @@ input.error,select.error{border-color:#E66C37}
 .photo-upload-text{font-size:11px;color:#003643;font-weight:700;font-family:'Lato',Arial,sans-serif}
 .photo-upload-hint{font-size:10px;color:#888;margin-top:3px;font-family:'Lato',Arial,sans-serif}
 .photo-remove{display:none;margin-top:7px;font-size:10px;color:#E66C37;cursor:pointer;text-decoration:underline;background:none;border:none;font-family:'Lato',Arial,sans-serif}
-.btn-generate{width:100%;padding:13px;background:#3c7495;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.4px;transition:background 0.15s;font-family:'Oswald',Arial,sans-serif}
+.btn-generate{width:100%;padding:13px;background:#417c50;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.4px;transition:background 0.15s;font-family:'Oswald',Arial,sans-serif}
 .btn-generate:hover{background:#004d5f}
 .preview-panel{background:#fff;border-radius:10px;border:1px solid #E2E6E9;overflow:hidden;position:sticky;top:20px}
 .preview-header{background:#3c7495;color:#fff;padding:12px 18px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;font-family:'Lato',Arial,sans-serif}
@@ -123,7 +123,7 @@ input.error,select.error{border-color:#E66C37}
     <hr class="divider">
     <div class="step-header">
       <div class="step-badge">4</div>Profile Photo
-      <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:#003643;margin-left:6px;">(optional)</span>
+      <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:#f4f7f9;margin-left:6px;">(optional)</span>
     </div>
     <div class="step-body">
       <div class="field-group">
@@ -188,6 +188,7 @@ const LINKS = {
   de:  { web:'https://www.abenteuerwege.de/?utm_source=outlook&utm_medium=email&utm_campaign=email_signature', fb:'https://www.facebook.com/abenteuerwegereisen/', ig:'https://www.instagram.com/abenteuerwegereisen/', yt:'https://www.youtube.com/@abenteuerwegereisen?sub_confirmation=1', group:'https://www.facebook.com/groups/abenteuerwegereisen/' }
 };
 const PHONE_LABEL = { uk:'Phone:', us:'Phone:', de:'Telefon:' };
+const EMAIL_LABEL = { uk:'Email:', us:'Email:', de:'E-Mail:' };
 let currentBU='', photoDataURL='', currentSignatureHTML='';
 
 function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -196,99 +197,166 @@ function fmtPhone(p){ return p.replace(/ /g,'&nbsp;'); }
 function buildSignatureHTML(bu, dept, name, title, email, phone, photo) {
   const l = LINKS[bu];
   const isMacs = bu !== 'de';
-  const logo   = isMacs ? IMG_MACS_LOGO : IMG_AW_LOGO;
-  const logoAlt= isMacs ? 'Macs Adventure' : 'AbenteuerWege';
-  // Explicit px dimensions for both display and img — Outlook needs both
-  const logoW  = 160, logoH = isMacs ? 44 : 65;
-  const iconS  = 28;  // social icon display size
-  const pl     = PHONE_LABEL[bu];
+  const logo = isMacs ? IMG_MACS_LOGO : IMG_AW_LOGO;
+  const logoAlt = isMacs ? 'Macs Adventure' : 'AbenteuerWege';
 
-  const photoCell = photo ? `<td width="90" valign="top" style="width:90px;vertical-align:top;padding-right:14px;padding-top:2px;">
-      <img src="${photo}" width="72" height="72" style="width:72px;height:72px;border-radius:50%;border:3px solid #3c7495;display:block;outline:none;" alt="${escHtml(name)}">
+  // Fixed dimensions help Outlook keep the layout consistent.
+  const sigW = 460;
+  const photoColW = 100;
+  const textCellW = photo ? sigW - photoColW : sigW;
+  const logoW = 160;
+  const logoH = isMacs ? 44 : 65;
+  const iconS = 28;
+  const pl = PHONE_LABEL[bu];
+  const el = EMAIL_LABEL[bu];
+
+  const photoCell = photo ? `
+    <td width="${photoColW}" valign="top"
+        style="width:${photoColW}px;vertical-align:top;padding:0;">
+      <img src="${photo}" width="72" height="72"
+           style="width:72px;height:72px;border-radius:50%;border:3px solid #3c7495;display:block;outline:none;"
+           alt="${escHtml(name)}">
     </td>` : '';
 
-  const phoneHTML = phone ? `<tr><td style="padding-top:5px;font-size:0;line-height:0;">
-      <span style="font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:bold;color:#3c7495;mso-line-height-rule:exactly;">${escHtml(pl)}&nbsp;</span><span dir="ltr" style="font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:bold;color:#3c7495;mso-line-height-rule:exactly;">${fmtPhone(escHtml(phone))}</span>
-    </td></tr>` : '';
+  const phoneHTML = phone ? `
+    <tr>
+      <td style="padding-top:2px;">
+        <span style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:14px;font-weight:bold;color:#3c7495;mso-line-height-rule:exactly;">${escHtml(pl)}&nbsp;</span><span dir="ltr" style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:14px;font-weight:bold;color:#003643;mso-line-height-rule:exactly;">${fmtPhone(escHtml(phone))}</span>
+      </td>
+    </tr>` : '';
 
-  const emailHTML = email ? `<tr><td style="padding-top:4px;">
-      <a href="mailto:${escHtml(email)}" style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#3c7495;text-decoration:none;mso-line-height-rule:exactly;">${escHtml(email)}</a>
-    </td></tr>` : '';
+  const emailHTML = email ? `
+    <tr>
+      <td style="padding-top:5px;">
+        <span style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:14px;font-weight:bold;color:#3c7495;mso-line-height-rule:exactly;">${escHtml(el)}&nbsp;</span><a href="mailto:${escHtml(email)}" style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:14px;font-weight:bold;color:#003643;text-decoration:none;mso-line-height-rule:exactly;">${escHtml(email)}</a>
+      </td>
+    </tr>` : '';
 
-  const deptHTML = dept ? `<tr><td style="padding-top:2px;">
-      <span style="font-family:Arial,Helvetica,sans-serif;font-size:8px;color:#888888;text-transform:uppercase;letter-spacing:1px;mso-line-height-rule:exactly;">${escHtml(dept)}</span>
-    </td></tr>` : '';
+  const deptHTML = dept ? `
+    <tr>
+      <td style="padding-top:2px;">
+        <span style="font-family:Arial,Helvetica,sans-serif;font-size:10px;line-height:13px;color:#003643;font-weight:bold;text-transform:uppercase;mso-line-height-rule:exactly;">${escHtml(dept)}</span>
+      </td>
+    </tr>` : '';
 
-  const deFooter = bu === 'de' ? `<tr><td colspan="2" style="padding-top:14px;">
-    <table border="0" cellpadding="0" cellspacing="0" width="460"><tr><td style="border-top:1px solid #E2E6E9;padding-top:10px;">
-      <p style="margin:0 0 3px 0;font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#3c7495;font-weight:bold;"><a href="https://www.abenteuerwege.de/" style="color:#3c7495;text-decoration:none;font-family:Arial,Helvetica,sans-serif;">AbenteuerWege Reisen GmbH</a></p>
-      <p style="margin:0 0 2px 0;font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#555555;"><strong>Adresse:</strong> Heinrich-Barth-Stra&#xDF;e 1-1A, 66115 Saarbr&#xFC;cken</p>
-      <p style="margin:0 0 2px 0;font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#555555;"><strong>Handelsregister:</strong> Amtsgericht Saarbr&#xFC;cken, HRB: 102265</p>
-      <p style="margin:0 0 2px 0;font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#555555;"><strong>Umsatzsteuer ID:</strong> DE298874056</p>
-      <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#555555;"><strong>Gesch&#xE4;ftsf&#xFC;hrung:</strong> Neil Lapping</p>
-    </td></tr></table></td></tr>` : '';
+  const deFooter = bu === 'de' ? `
+    <tr>
+      <td style="padding-top:14px;">
+        <table border="0" cellpadding="0" cellspacing="0" width="${sigW}" style="width:${sigW}px;border-collapse:collapse;">
+          <tr>
+            <td style="border-top:1px solid #E2E6E9;padding-top:10px;">
+              <p style="margin:0 0 3px 0;font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#3c7495;font-weight:bold;"><a href="https://www.abenteuerwege.de/" style="color:#3c7495;text-decoration:none;font-family:Arial,Helvetica,sans-serif;">AbenteuerWege Reisen GmbH</a></p>
+              <p style="margin:0 0 2px 0;font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#555555;"><strong>Adresse:</strong> Heinrich-Barth-Stra&#xDF;e 1-1A, 66115 Saarbr&#xFC;cken</p>
+              <p style="margin:0 0 2px 0;font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#555555;"><strong>Handelsregister:</strong> Amtsgericht Saarbr&#xFC;cken, HRB: 102265</p>
+              <p style="margin:0 0 2px 0;font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#555555;"><strong>Umsatzsteuer ID:</strong> DE298874056</p>
+              <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#555555;"><strong>Gesch&#xE4;ftsf&#xFC;hrung:</strong> Neil Lapping</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>` : '';
 
-  return `<table border="0" cellpadding="0" cellspacing="0" width="500" style="width:500px;border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;background-color:#ffffff;">
+  return `
+<table border="0" cellpadding="0" cellspacing="0" width="${sigW}"
+       style="width:${sigW}px;border-collapse:collapse;table-layout:fixed;mso-table-lspace:0pt;mso-table-rspace:0pt;background-color:#ffffff;">
 
-  <!-- Row 1: photo + name/title/dept -->
+  <!-- PHOTO + NAME / TITLE / DEPARTMENT -->
   <tr>
-    ${photoCell}
-    <td valign="top" style="vertical-align:top;">
-      <table border="0" cellpadding="0" cellspacing="0">
-        <tr><td><span style="font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;color:#3c7495;mso-line-height-rule:exactly;">${escHtml(name)}</span></td></tr>
-        <tr><td style="padding-top:3px;"><span style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#3c7495;mso-line-height-rule:exactly;">${escHtml(title)}</span></td></tr>
-        ${deptHTML}
+    <td>
+      <table border="0" cellpadding="0" cellspacing="0" width="${sigW}"
+             style="width:${sigW}px;table-layout:fixed;border-collapse:collapse;">
+        <tr>
+          ${photoCell}
+          <td width="${textCellW}" valign="top"
+              style="width:${textCellW}px;vertical-align:top;padding:5px 0 0 0;">
+            <table border="0" cellpadding="0" cellspacing="0" width="${textCellW}"
+                   style="width:${textCellW}px;border-collapse:collapse;table-layout:fixed;">
+              <tr>
+                <td>
+                  <span style="font-family:'Oswald','Arial Narrow',Arial,Helvetica,sans-serif;font-size:14px;line-height:17px;font-weight:600;color:#3c7495;mso-line-height-rule:exactly;">${escHtml(name)}</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding-top:4px;">
+                  <span style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:14px;font-weight:bold;color:#003643;mso-line-height-rule:exactly;">${escHtml(title)}</span>
+                </td>
+              </tr>
+              ${deptHTML}
+            </table>
+          </td>
+        </tr>
       </table>
     </td>
   </tr>
 
-  <!-- Blue rule -->
-  <tr><td colspan="2" style="padding-top:12px;padding-bottom:0;font-size:0;line-height:0;">
-    <table border="0" cellpadding="0" cellspacing="0" width="460"><tr>
-      <td height="2" bgcolor="#3c7495" style="height:2px;background-color:#3c7495;font-size:0;line-height:0;">&nbsp;</td>
-    </tr></table>
-  </td></tr>
+  <!-- FIRST BLUE DIVIDER -->
+  <tr>
+    <td style="padding-top:12px;font-size:0;line-height:0;">
+      <table border="0" cellpadding="0" cellspacing="0" width="${sigW}" style="width:${sigW}px;border-collapse:collapse;">
+        <tr>
+          <td height="2" bgcolor="#3c7495" style="height:2px;background-color:#3c7495;font-size:0;line-height:0;">&nbsp;</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
 
-  <!-- Phone + email -->
-  <tr><td colspan="2" style="padding-top:8px;">
-    <table border="0" cellpadding="0" cellspacing="0">
-      ${phoneHTML}
-      ${emailHTML}
-    </table>
-  </td></tr>
+  <!-- PHONE + EMAIL -->
+  <tr>
+    <td style="padding-top:4px;">
+      <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        ${phoneHTML}
+        ${emailHTML}
+      </table>
+    </td>
+  </tr>
 
-  <!-- Grey rule -->
-  <tr><td colspan="2" style="padding-top:10px;padding-bottom:0;font-size:0;line-height:0;">
-    <table border="0" cellpadding="0" cellspacing="0" width="460"><tr>
-      <td height="1" bgcolor="#E2E6E9" style="height:1px;background-color:#E2E6E9;font-size:0;line-height:0;">&nbsp;</td>
-    </tr></table>
-  </td></tr>
+  <!-- SECOND BLUE DIVIDER -->
+  <tr>
+    <td style="padding-top:10px;font-size:0;line-height:0;">
+      <table border="0" cellpadding="0" cellspacing="0" width="${sigW}" style="width:${sigW}px;border-collapse:collapse;">
+        <tr>
+          <td height="2" bgcolor="#3c7495" style="height:2px;background-color:#3c7495;font-size:0;line-height:0;">&nbsp;</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
 
-  <!-- Logo + icons -->
-  <tr><td colspan="2" style="padding-top:12px;">
-    <table border="0" cellpadding="0" cellspacing="0">
-      <tr><td valign="top" style="vertical-align:top;">
-        <a href="${l.web}" target="_blank" style="display:block;border:0;text-decoration:none;line-height:0;mso-line-height-rule:exactly;">
-          <img src="${logo}" width="${logoW}" height="${logoH}" alt="${logoAlt}"
-               style="display:block;border:0;outline:none;width:${logoW}px;height:${logoH}px;mso-line-height-rule:exactly;">
-        </a>
-        <table border="0" cellpadding="0" cellspacing="0" style="padding-top:10px;"><tr>
-          <td width="${iconS+6}" style="width:${iconS+6}px;padding-right:6px;font-size:0;line-height:0;">
-            <a href="${l.fb}" target="_blank" style="display:block;border:0;line-height:0;"><img src="${IMG_FB_ICON}" width="${iconS}" height="${iconS}" alt="Facebook" style="display:block;border:0;outline:none;width:${iconS}px;height:${iconS}px;"></a>
+  <!-- LOGO LEFT / SOCIAL ICONS RIGHT -->
+  <tr>
+    <td style="padding-top:12px;">
+      <table border="0" cellpadding="0" cellspacing="0" width="${sigW}"
+             style="width:${sigW}px;border-collapse:collapse;table-layout:fixed;">
+        <tr>
+          <td width="250" valign="top" style="width:250px;vertical-align:top;padding:0;">
+            <a href="${l.web}" target="_blank" style="display:block;border:0;text-decoration:none;line-height:0;mso-line-height-rule:exactly;">
+              <img src="${logo}" width="${logoW}" height="${logoH}" alt="${logoAlt}"
+                   style="display:block;border:0;outline:none;width:${logoW}px;height:${logoH}px;mso-line-height-rule:exactly;">
+            </a>
           </td>
-          <td width="${iconS+6}" style="width:${iconS+6}px;padding-right:6px;font-size:0;line-height:0;">
-            <a href="${l.ig}" target="_blank" style="display:block;border:0;line-height:0;"><img src="${IMG_IG_ICON}" width="${iconS}" height="${iconS}" alt="Instagram" style="display:block;border:0;outline:none;width:${iconS}px;height:${iconS}px;"></a>
+
+          <td width="210" valign="middle" align="right"
+              style="width:210px;vertical-align:middle;text-align:right;padding:0;">
+            <table border="0" cellpadding="0" cellspacing="0" align="right" style="border-collapse:collapse;">
+              <tr>
+                <td width="${iconS+8}" style="width:${iconS+8}px;padding-right:8px;font-size:0;line-height:0;">
+                  <a href="${l.fb}" target="_blank" style="display:block;border:0;line-height:0;"><img src="${IMG_FB_ICON}" width="${iconS}" height="${iconS}" alt="Facebook" style="display:block;border:0;outline:none;width:${iconS}px;height:${iconS}px;"></a>
+                </td>
+                <td width="${iconS+8}" style="width:${iconS+8}px;padding-right:8px;font-size:0;line-height:0;">
+                  <a href="${l.ig}" target="_blank" style="display:block;border:0;line-height:0;"><img src="${IMG_IG_ICON}" width="${iconS}" height="${iconS}" alt="Instagram" style="display:block;border:0;outline:none;width:${iconS}px;height:${iconS}px;"></a>
+                </td>
+                <td width="${iconS+8}" style="width:${iconS+8}px;padding-right:8px;font-size:0;line-height:0;">
+                  <a href="${l.yt}" target="_blank" style="display:block;border:0;line-height:0;"><img src="${IMG_YT_ICON}" width="${iconS}" height="${iconS}" alt="YouTube" style="display:block;border:0;outline:none;width:${iconS}px;height:${iconS}px;"></a>
+                </td>
+                <td width="${iconS}" style="width:${iconS}px;font-size:0;line-height:0;">
+                  <a href="${l.group}" target="_blank" style="display:block;border:0;line-height:0;"><img src="${IMG_COMM_ICON}" width="${iconS}" height="${iconS}" alt="Community" style="display:block;border:0;outline:none;width:${iconS}px;height:${iconS}px;"></a>
+                </td>
+              </tr>
+            </table>
           </td>
-          <td width="${iconS+6}" style="width:${iconS+6}px;padding-right:6px;font-size:0;line-height:0;">
-            <a href="${l.yt}" target="_blank" style="display:block;border:0;line-height:0;"><img src="${IMG_YT_ICON}" width="${iconS}" height="${iconS}" alt="YouTube" style="display:block;border:0;outline:none;width:${iconS}px;height:${iconS}px;"></a>
-          </td>
-          <td width="${iconS}" style="width:${iconS}px;font-size:0;line-height:0;">
-            <a href="${l.group}" target="_blank" style="display:block;border:0;line-height:0;"><img src="${IMG_COMM_ICON}" width="${iconS}" height="${iconS}" alt="Community" style="display:block;border:0;outline:none;width:${iconS}px;height:${iconS}px;"></a>
-          </td>
-        </tr></table>
-      </td></tr>
-    </table>
-  </td></tr>
+        </tr>
+      </table>
+    </td>
+  </tr>
 
   ${deFooter}
 </table>`;
@@ -309,7 +377,7 @@ function removePhoto(){photoDataURL='';document.getElementById('photo-input').va
 function renderPreview(html){
   const f=document.getElementById('sig-iframe');
   const d=f.contentDocument||f.contentWindow.document;
-  d.open();d.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{margin:16px;padding:0;background:#fff;}img{max-width:100%;}a{color:inherit;}</style></head><body>'+html+'</body></html>');d.close();
+  d.open();d.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600&display=swap" rel="stylesheet"><style>body{margin:16px;padding:0;background:#fff;}img{max-width:100%;}a{color:inherit;}</style></head><body>'+html+'</body></html>');d.close();
   setTimeout(()=>{try{f.style.height=(d.body.scrollHeight+32)+'px';}catch(e){}},100);
 }
 
@@ -343,7 +411,7 @@ function generateSignature(){if(!validateForm())return;liveUpdate();document.get
 async function copyRich(){
   if(!currentSignatureHTML)return;
   const btn=document.getElementById('btn-copy-rich');
-  const html='<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>'+currentSignatureHTML+'</body></html>';
+  const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600&display=swap" rel="stylesheet"></head><body>'+currentSignatureHTML+'</body></html>';
   if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write){
     try{await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'})})]);showCopied(btn,'Copy Signature');return;}catch(e){console.warn(e);}
   }
@@ -356,7 +424,7 @@ async function copyRich(){
 async function copyHTML(){
   if(!currentSignatureHTML)return;
   const btn=document.getElementById('btn-copy-html');
-  const html='<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>'+currentSignatureHTML+'</body></html>';
+  const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600&display=swap" rel="stylesheet"></head><body>'+currentSignatureHTML+'</body></html>';
   try{await navigator.clipboard.writeText(html);showCopied(btn,'Copy HTML');}catch(e){alert('Could not access clipboard.');}
 }
 

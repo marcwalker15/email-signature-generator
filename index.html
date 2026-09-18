@@ -208,7 +208,7 @@ function buildSignatureHTML(bu, dept, name, title, phone, mobile, photo) {
     <td width="${photoColW}" valign="top"
         style="width:${photoColW}px;vertical-align:top;padding:0;">
       <img src="${photo}" width="72" height="72"
-           style="width:72px;height:72px;border-radius:50%;border:3px solid #3c7495;display:block;outline:none;"
+           style="width:72px;height:72px;display:block;outline:none;border:0;"
            alt="${escHtml(name)}">
     </td>` : '';
 
@@ -382,12 +382,50 @@ function buildSignatureHTML(bu, dept, name, title, phone, mobile, photo) {
 function selectBU(bu){currentBU=bu;['uk','us','de'].forEach(b=>document.getElementById('bu-'+b).classList.remove('selected'));document.getElementById('bu-'+bu).classList.add('selected');document.getElementById('bu-error').classList.remove('show');liveUpdate();}
 
 function handlePhoto(e){
-  const file=e.target.files[0];if(!file)return;
-  if(file.size>2*1024*1024){alert('Photo must be under 2MB.');return;}
-  const r=new FileReader();
-  r.onload=ev=>{photoDataURL=ev.target.result;document.getElementById('photo-preview').src=photoDataURL;document.getElementById('photo-preview').style.display='block';document.getElementById('photo-placeholder').style.display='none';document.getElementById('photo-remove').style.display='inline-block';liveUpdate();};
-  r.readAsDataURL(file);
+    const file=e.target.files[0];if(!file)return;
+    if(file.size>2*1024*1024){alert('Photo must be under 2MB.');return;}
+    const r=new FileReader();
+    r.onload=ev=>{
+          const img=new Image();
+          img.onload=()=>{
+                  photoDataURL=cropToCircle(img);
+                  document.getElementById('photo-preview').src=photoDataURL;
+                  document.getElementById('photo-preview').style.display='block';
+                  document.getElementById('photo-placeholder').style.display='none';
+                  document.getElementById('photo-remove').style.display='inline-block';
+                  liveUpdate();
+          };
+          img.src=ev.target.result;
+    };
+    r.readAsDataURL(file);
 }
+
+  // Bakes the photo into a circular PNG with a solid ring border, so it displays
+  // correctly everywhere -- including Outlook desktop, which ignores CSS
+  // border-radius and border on <img> tags entirely.
+  function cropToCircle(img){
+      const size=288;
+      const borderPx=12;
+      const canvas=document.createElement('canvas');
+      canvas.width=size;canvas.height=size;
+      const ctx=canvas.getContext('2d');
+
+      ctx.beginPath();
+      ctx.arc(size/2,size/2,size/2,0,Math.PI*2);
+      ctx.fillStyle='#3c7495';
+      ctx.fill();
+
+      const srcSize=Math.min(img.width,img.height);
+      const sx=(img.width-srcSize)/2, sy=(img.height-srcSize)/2;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(size/2,size/2,size/2-borderPx,0,Math.PI*2);
+      ctx.clip();
+      ctx.drawImage(img,sx,sy,srcSize,srcSize,borderPx,borderPx,size-borderPx*2,size-borderPx*2);
+      ctx.restore();
+
+      return canvas.toDataURL('image/png');
+  }
 
 function removePhoto(){photoDataURL='';document.getElementById('photo-input').value='';document.getElementById('photo-preview').style.display='none';document.getElementById('photo-placeholder').style.display='flex';document.getElementById('photo-remove').style.display='none';liveUpdate();}
 

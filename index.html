@@ -196,8 +196,11 @@ function buildSignatureHTML(bu, dept, name, title, phone, mobile, photo) {
 
   // Fixed dimensions help Outlook keep the layout consistent.
   const sigW = 460;
-  const photoColW = 100;
-  const textCellW = photo ? sigW - photoColW : sigW;
+  // Give the photo a dedicated 14px spacer cell. Unlike padding added to a
+  // 100px photo column, this creates a predictable gap in mobile email apps.
+  const photoColW = 72;
+  const photoGapW = 14;
+  const textCellW = photo ? sigW - photoColW - photoGapW : sigW;
   const logoW = 145;
   const logoH = isMacs ? 40 : 59;
   const iconS = 24;
@@ -206,23 +209,25 @@ function buildSignatureHTML(bu, dept, name, title, phone, mobile, photo) {
 
   const photoCell = photo ? `
     <td width="${photoColW}" valign="top"
-        style="width:${photoColW}px;vertical-align:top;padding:0 16px 0 0;">
+        style="width:${photoColW}px;vertical-align:top;padding:0;">
       <img src="${photo}" width="72" height="72"
            style="width:72px;height:72px;display:block;outline:none;border:0;"
            alt="${escHtml(name)}">
-    </td>` : '';
+    </td>
+    <td width="${photoGapW}" valign="top"
+        style="width:${photoGapW}px;vertical-align:top;padding:0;font-size:1px;line-height:1px;">&nbsp;</td>` : '';
 
   const phoneHTML = phone ? `
     <tr>
       <td style="padding-top:2px;">
-        <span style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:14px;font-weight:bold;color:#3c7495;mso-line-height-rule:exactly;">${escHtml(pl)}&nbsp;</span><span dir="ltr" style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:14px;font-weight:bold;color:#003643;mso-line-height-rule:exactly;">${fmtPhone(escHtml(phone))}</span>
+        <span style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:16px;font-weight:bold;color:#3c7495;mso-line-height-rule:exactly;">${escHtml(pl)}&nbsp;</span><span dir="ltr" style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:16px;font-weight:bold;color:#003643;mso-line-height-rule:exactly;">${fmtPhone(escHtml(phone))}</span>
       </td>
     </tr>` : '';
 
   const mobileHTML = mobile ? `
     <tr>
       <td style="padding-top:2px;">
-        <span style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:14px;font-weight:bold;color:#3c7495;mso-line-height-rule:exactly;">${escHtml(ml)}&nbsp;</span><span dir="ltr" style="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:14px;font-weight:bold;color:#003643;mso-line-height-rule:exactly;">${fmtPhone(escHtml(mobile))}</span>
+        <span style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:16px;font-weight:bold;color:#3c7495;mso-line-height-rule:exactly;">${escHtml(ml)}&nbsp;</span><span dir="ltr" style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:16px;font-weight:bold;color:#003643;mso-line-height-rule:exactly;">${fmtPhone(escHtml(mobile))}</span>
       </td>
     </tr>` : '';
 

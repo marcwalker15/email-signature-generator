@@ -199,7 +199,7 @@ function buildSignatureHTML(bu, dept, name, title, phone, mobile, photo) {
   const photoColW = 100;
   const textCellW = photo ? sigW - photoColW : sigW;
   const logoW = 145;
-  const logoH = isMacs ? 44 : 65;
+  const logoH = isMacs ? 40 : 59;
   const iconS = 24;
   const pl = PHONE_LABEL[bu];
   const ml = MOBILE_LABEL[bu];
@@ -334,7 +334,7 @@ function buildSignatureHTML(bu, dept, name, title, phone, mobile, photo) {
           <td width="210" valign="top" align="right"
               style="width:210px;vertical-align:top;text-align:right;padding:0;">
             <!-- Outlook/Word needs generous vertical space around these images.
-                 Use a deliberately taller row and top-align the 28px icons so any extra
+                 Use a deliberately taller row and top-align the 24px icons so any extra
                  height sits underneath them instead of letting Outlook crop the image. -->
             <table border="0" cellpadding="0" cellspacing="0" align="right"
                    style="border-collapse:collapse;">
@@ -400,32 +400,27 @@ function handlePhoto(e){
     r.readAsDataURL(file);
 }
 
-  // Bakes the photo into a circular PNG with a solid ring border, so it displays
-  // correctly everywhere -- including Outlook desktop, which ignores CSS
-  // border-radius and border on <img> tags entirely.
-  function cropToCircle(img){
-      const size=288;
-      const borderPx=12;
-      const canvas=document.createElement('canvas');
-      canvas.width=size;canvas.height=size;
-      const ctx=canvas.getContext('2d');
-
-      ctx.beginPath();
-      ctx.arc(size/2,size/2,size/2,0,Math.PI*2);
-      ctx.fillStyle='#3c7495';
-      ctx.fill();
-
-      const srcSize=Math.min(img.width,img.height);
-      const sx=(img.width-srcSize)/2, sy=(img.height-srcSize)/2;
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(size/2,size/2,size/2-borderPx,0,Math.PI*2);
-      ctx.clip();
-      ctx.drawImage(img,sx,sy,srcSize,srcSize,borderPx,borderPx,size-borderPx*2,size-borderPx*2);
-      ctx.restore();
-
-      return canvas.toDataURL('image/png');
-  }
+// Bakes the photo into a circular PNG with a solid ring border for Outlook.
+function cropToCircle(img){
+    const size=288;
+    const borderPx=12;
+    const canvas=document.createElement('canvas');
+    canvas.width=size;canvas.height=size;
+    const ctx=canvas.getContext('2d');
+    ctx.beginPath();
+    ctx.arc(size/2,size/2,size/2,0,Math.PI*2);
+    ctx.fillStyle='#3c7495';
+    ctx.fill();
+    const srcSize=Math.min(img.width,img.height);
+    const sx=(img.width-srcSize)/2, sy=(img.height-srcSize)/2;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(size/2,size/2,size/2-borderPx,0,Math.PI*2);
+    ctx.clip();
+    ctx.drawImage(img,sx,sy,srcSize,srcSize,borderPx,borderPx,size-borderPx*2,size-borderPx*2);
+    ctx.restore();
+    return canvas.toDataURL('image/png');
+}
 
 function removePhoto(){photoDataURL='';document.getElementById('photo-input').value='';document.getElementById('photo-preview').style.display='none';document.getElementById('photo-placeholder').style.display='flex';document.getElementById('photo-remove').style.display='none';liveUpdate();}
 

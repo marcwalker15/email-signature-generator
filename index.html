@@ -256,7 +256,7 @@ function buildSignatureHTML(bu, dept, name, title, phone, mobile, photo) {
   const deptHTML = dept ? `
     <tr>
       <td style="padding-top:2px;">
-        <span style="font-family:'Lato',Arial,Helvetica,sans-serif;font-size:12px;line-height:15px;color:#003643;font-weight:bold;text-transform:uppercase;mso-line-height-rule:exactly;">${escHtml(dept)}</span>
+        <span style="font-family:'Lato',Arial,Helvetica,sans-serif;font-size:12px;line-height:15px;color:#003643;font-weight:bold;text-transform:uppercase;mso-line-height-rule:exactly;">${escHtml(dept.toUpperCase())}</span>
       </td>
     </tr>` : '';
 
